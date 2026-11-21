@@ -1,0 +1,6 @@
+# After a week or two, note jobs from the emails you liked or ignored. One line each.
+# The agent reads these and learns your taste. Example lines (delete these):
+liked: []
+#  - "Associate, Real Estate Debt at X: small deal team, direct deal ownership"
+disliked: []
+#  - "Credit Analyst at a big bank: all paper writing, long hours"

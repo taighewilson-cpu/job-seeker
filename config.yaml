@@ -1,0 +1,72 @@
+# ---------- What to search for ----------
+search:
+  keywords: ["real estate credit", "real estate finance", "real estate debt", "private credit real estate",
+             "credit analyst real estate", "investment analyst real estate", "structured finance analyst"]
+  country: au
+  location: Sydney
+  max_age_days: 7          # Adzuna only returns ads newer than this (fresh ads = better odds)
+  max_ad_age_days: 45      # any ad older than this is dropped before scoring
+  title_include: []        # optional regexes; title must match one
+  title_exclude: ["intern", "graduate", "managing director", "head of", "chief"]
+
+# ---------- Where to look ----------
+sources:
+  adzuna: true             # needs ADZUNA_APP_ID / ADZUNA_APP_KEY (free at developer.adzuna.com)
+  email_alerts:            # SEEK / LinkedIn / Indeed alert emails (see README)
+    enabled: true
+    folder: job-alerts     # the Gmail label the alerts are filed under
+    max_emails: 30
+
+# Employers you'd love to work for. Checked directly, and given a mild boost. Only name is required.
+watchlist: []
+#  - name: Example Real Estate Debt Fund
+#    careers_url: https://example.com/careers
+#    greenhouse: sometoken      # boards.greenhouse.io/<token>
+#    lever: sometoken           # jobs.lever.co/<token>
+
+# ---------- Scoring ----------
+scoring:
+  model: claude-haiku-5-5            # scoring + application notes
+  extract_model: claude-haiku-5-5    # reads alert emails / careers pages
+  # Your ranking is baked into the weights: job > company > industry. Weights sum to 1.0.
+  weights: { job_quality: 0.30, company_quality: 0.20, industry_quality: 0.10, attainability: 0.25, exit: 0.15 }
+  # Hard gates: "never a bad job", "not a bad company". Below these, the posting is rejected
+  # (it shows in the email's "Rejected" list so you can check the gates are sensible).
+  gate_job_below: 40
+  gate_company_below: 35
+  # Ad age multiplier on attainability: [max_days_old, multiplier]
+  freshness: [[3, 1.0], [7, 0.95], [14, 0.85], [21, 0.75], [30, 0.65], [45, 0.55]]
+  freshness_older: 0.45
+  freshness_unknown: 0.9
+  dd_flag_below: 50        # exit score below this always gets a "further DD" flag
+  min_score: 65            # only email jobs at or above this overall score
+  max_jobs_per_run: 60     # cap on jobs scored per day (controls cost)
+  top_n_in_email: 10
+
+# ---------- Industry screen (governance is weighted far more heavily than market conditions) ----------
+industry:
+  enabled: true
+  model: claude-sonnet-5-5
+  refresh_days: 7              # each industry is researched once, then cached for this long
+  max_screens_per_run: 8
+  max_searches: 4
+  base: 80                     # starting industry_quality before penalties
+  governance_penalty: { clean: 0, isolated: 8, serious: 30, severe: 50 }
+  market_penalty: { fine: 0, choppy: 2, weak: 12, "genuinely bad": 30 }
+  overall_penalty: { serious: 5, severe: 10 }   # extra points off the job's overall score (governance red flags)
+  labels:                      # jobs are matched to the closest label; add your own
+    - Private credit (real estate lending)
+    - Bank real estate finance
+    - Real estate funds management / investment
+    - Listed property (REITs and developers)
+    - Super / insurance real estate investing
+    - Non-bank / mortgage lending
+    - Real estate advisory / valuation
+
+# ---------- Deep research on the top matches ----------
+research:
+  enabled: true
+  model: claude-sonnet-5-5
+  top_n: 5
+  max_searches: 4
+  application_notes: false   # set true for resume/cover-note suggestions on the top matches
